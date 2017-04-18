@@ -127,6 +127,11 @@ class ReportRenderer {
       title += ` (target: ${audit.result.optimalValue})`;
     }
 
+    if (audit.result.debugString) {
+      const debugStrEl = tmpl.appendChild(this._dom.createElement('div', 'lh-debug'));
+      debugStrEl.textContent = audit.result.debugString;
+    }
+
     // Append audit details to header section so the entire audit is within a <details>.
     const header = tmpl.querySelector('.lh-score__header');
     header.open = audit.score < 100; // expand failed audits
