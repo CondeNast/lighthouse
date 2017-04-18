@@ -93,6 +93,19 @@ describe('ReportRenderer V2', () => {
           '.lh-category > .lh-passed-audits > .lh-audit');
       assert.equal(audits.length, category.audits.length, 'renders correct number of audits');
     });
+
+    it('renders a debug str when appropriate', () => {
+      const audit1 = renderer._renderAudit({
+        scoringMode: 'binary', score: 0,
+        result: {helpText: '', debugString: 'Debug string'},
+      });
+      assert.ok(audit1.querySelector('.lh-debug'));
+
+      const audit2 = renderer._renderAudit({
+        scoringMode: 'binary', score: 0, result: {helpText: ''},
+      });
+      assert.ok(!audit2.querySelector('.lh-debug'));
+    });
   });
 
   describe('grouping passed/failed', () => {
@@ -107,7 +120,7 @@ describe('ReportRenderer V2', () => {
       assert.equal(failedAudits.length, 7);
     });
 
-    it('doesnt create a pased section if there were 0 passed', () => {
+    it('doesnt create a passed section if there were 0 passed', () => {
       const category = JSON.parse(JSON.stringify(sampleResults.reportCategories[0]));
       category.audits.forEach(audit => audit.score = 0);
       const elem = renderer._renderCategory(category);
