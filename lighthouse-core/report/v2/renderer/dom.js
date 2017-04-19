@@ -60,7 +60,17 @@ class DOM {
     if (!template) {
       throw new Error(`Template not found: template${selector}`);
     }
-    return /** @type {!DocumentFragment} */ (this._document.importNode(template.content, true));
+
+    const clone = this._document.importNode(template.content, true);
+
+    // Prevent duplicate styles in the DOM. After a template has been stamped
+    // for the first time, remove its styles so they're not re-added.
+    if (template.used) {
+      Array.from(clone.querySelectorAll('style')).forEach(style => style.remove());
+    }
+    template.used = true;
+
+    return /** @type {!DocumentFragment} */ (clone);
   }
 
   /**
