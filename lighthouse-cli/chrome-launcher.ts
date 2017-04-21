@@ -43,13 +43,15 @@ export class ChromeLauncher {
   additionalFlags: Array<string>
   chrome?: childProcess.ChildProcess
   port: number
+  host: string
 
   // We can not use default args here due to support node pre 6.
   constructor(opts?: {
       startingUrl?: string,
       additionalFlags?: Array<string>,
       autoSelectChrome?: Boolean,
-      port?: number}) {
+      port?: number,
+      host?: string}) {
 
         opts = opts || {};
 
@@ -58,6 +60,7 @@ export class ChromeLauncher {
         this.startingUrl = defaults(opts.startingUrl, 'about:blank');
         this.additionalFlags = defaults(opts.additionalFlags, []);
         this.port = defaults(opts.port, 9222);
+        this.host = defaults(opts.host, 'localhost');
   }
 
   flags() {
@@ -178,7 +181,7 @@ export class ChromeLauncher {
   // resolves if ready, rejects otherwise
   isDebuggerReady(): Promise<{}> {
     return new Promise((resolve, reject) => {
-      const client = net.createConnection(this.port);
+      const client = net.createConnection(this.port, this.host);
       client.once('error', err => {
         this.cleanup(client);
         reject(err);

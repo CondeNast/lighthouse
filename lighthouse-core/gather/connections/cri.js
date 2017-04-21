@@ -21,19 +21,20 @@ const WebSocket = require('ws');
 const http = require('http');
 const log = require('../../lib/log.js');
 
-const hostname = 'localhost';
 const CONNECT_TIMEOUT = 10000;
 const DEFAULT_PORT = 9222;
+const DEFAULT_HOSTNAME = 'localhost';
 
 class CriConnection extends Connection {
   /**
    * @param {number=} port Optional port number. Defaults to 9222;
    * @constructor
    */
-  constructor(port) {
+  constructor(port, hostname) {
     super();
 
     this.port = port || DEFAULT_PORT;
+    this.hostname = hostname || DEFAULT_HOSTNAME;
   }
 
   /**
@@ -88,7 +89,7 @@ class CriConnection extends Connection {
   _runJsonCommand(command) {
     return new Promise((resolve, reject) => {
       const request = http.get({
-        hostname: hostname,
+        hostname: this.hostname,
         port: this.port,
         path: '/json/' + command
       }, response => {

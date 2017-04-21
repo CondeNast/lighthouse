@@ -87,6 +87,7 @@ const cliFlags = yargs
     'config-path': 'The path to the config JSON.',
     'chrome-flags': 'Custom flags to pass to Chrome.',
     'perf': 'Use a performance-test-only configuration',
+    'host': 'The host to use for the debugging protocol. Normally leave blank for default (localhost).',
     'port': 'The port to use for the debugging protocol. Use 0 for a random port',
     'max-wait-for-load': 'The timeout (in milliseconds) to wait before the page is considered done loading and the run should continue. WARNING: Very high values can lead to large traces and instability',
     'skip-autolaunch': 'Skip autolaunch of Chrome when already running instance is not found',
@@ -135,6 +136,7 @@ Example: --output-path=./lighthouse-results.html`,
   .default('disable-cpu-throttling', false)
   .default('output', Printer.GetValidOutputOptions()[Printer.OutputMode.html])
   .default('port', 9222)
+  .default('host', 'localhost')
   .default('max-wait-for-load', Driver.MAX_WAIT_FOR_FULLY_LOADED)
   .check((argv: {listAllAudits?: boolean, listTraceCategories?: boolean, _: Array<any>}) => {
     // Make sure lighthouse has been passed a url, or at least one of --list-all-audits
@@ -204,10 +206,11 @@ function initPort(flags: {port: number}): Promise<undefined> {
  * port. If none is found and the `skipAutolaunch` flag is not true, launches
  * a debuggable instance.
  */
-function getDebuggableChrome(flags: {skipAutolaunch: boolean, port: number, selectChrome: boolean,
+function getDebuggableChrome(flags: {skipAutolaunch: boolean, port: number, host: string, selectChrome: boolean,
                                chromeFlags: string}): Promise<ChromeLauncher> {
   const chromeLauncher = new ChromeLauncher({
     port: flags.port,
+    host: flags.host,
     additionalFlags: flags.chromeFlags.split(' '),
     autoSelectChrome: !flags.selectChrome,
   });
@@ -222,6 +225,14 @@ function getDebuggableChrome(flags: {skipAutolaunch: boolean, port: number, sele
     .isDebuggerReady()
     .catch(() => {
       if (flags.skipAutolaunch) {
+        return;
+      }
+
+      if (flags.host != 'localhost') {
+        console.error(
+          'Unable to connect to Chrome at ' + flags.host + ':' + flags.port +
+          '. Not launching local Chrome due to custom host setting.'
+        );
         return;
       }
 
@@ -317,7 +328,7 @@ function saveResults(results: Results,
 }
 
 export async function runLighthouse(url: string,
-                       flags: {port: number, skipAutolaunch: boolean, selectChrome: boolean, output: any,
+                       flags: {port: number, host: string, skipAutolaunch: boolean, selectChrome: boolean, output: any,
                          outputPath: string, interactive: boolean, saveArtifacts: boolean, saveAssets: boolean
                          chromeFlags: string, maxWaitForLoad: number, view: boolean},
                        config: Object | null): Promise<{}|void> {
