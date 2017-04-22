@@ -1,5 +1,5 @@
 {
-  "name": "lighthouse",
+  "name": "@condenast/lighthouse",
   "version": "1.7.0-alpha.1",
   "description": "Lighthouse",
   "main": "./lighthouse-core/index.js",
